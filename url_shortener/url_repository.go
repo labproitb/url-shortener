@@ -1,4 +1,4 @@
-package url_shortner
+package url_shortener
 
 import (
 	"database/sql"
@@ -20,13 +20,14 @@ type PersistentUrlRepository struct {
 	db sql.DB
 }
 
-func (c *CachedUrlRepository) Get(key string) string {
+func (c *CachedUrlRepository) Get(key string) (string, error) {
 	val, err := c.client.Get(key).Result()
 	if err != nil {
 		log.Printf("Unable to find value for %s", key)
+		return "", err
 	}
 
-	return val
+	return val, nil
 }
 
 func (c *CachedUrlRepository) Set(url string, key string) {
