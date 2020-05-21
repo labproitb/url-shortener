@@ -1,6 +1,7 @@
-package repository
+package url_shortner
 
 import (
+	"database/sql"
 	"github.com/go-redis/redis/v7"
 	"log"
 	"time"
@@ -13,6 +14,10 @@ type UrlRepository interface {
 
 type CachedUrlRepository struct {
 	client redis.Client
+}
+
+type PersistentUrlRepository struct {
+	db sql.DB
 }
 
 func (c *CachedUrlRepository) Get(key string) string {
@@ -31,6 +36,31 @@ func (c *CachedUrlRepository) Set(url string, key string) {
 	}
 
 	_, err = c.client.Set(key, url, d).Result()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (p *PersistentUrlRepository) Get(key string) (string, error) {
+	query := "select long from url where key = :key"
+	r, err := p.db.Query(query, sql.Named("key", key))
+	if err != nil {
+		panic(err)
+	}
+	defer r.Close()
+
+	var value string
+	err = r.Scan(&value)
+	if err != nil {
+		return "", err
+	}
+
+	return value, nil
+}
+
+func (p *PersistentUrlRepository) Set(key string, value string) {
+	query := "insert into url (key, value) values (:key, :value)"
+	_, err := p.db.Exec(query, sql.Named("key", key), sql.Named("value", value))
 	if err != nil {
 		panic(err)
 	}
