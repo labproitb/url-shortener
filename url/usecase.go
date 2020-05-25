@@ -1,13 +1,13 @@
-package url_shortener
+package url
 
 import "math/rand"
 
-type UrlUseCase struct {
+type UseCase struct {
 	Cache CachedUrlRepository
 	Storage PersistentUrlRepository
 }
 
-func (u *UrlUseCase) generateRandomString(length int) string {
+func (u *UseCase) generateRandomString(length int) string {
 	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 	b := make([]byte, length)
@@ -18,7 +18,7 @@ func (u *UrlUseCase) generateRandomString(length int) string {
 	return string(b)
 }
 
-func (u *UrlUseCase) GenerateShortUrl() string {
+func (u *UseCase) GenerateShortUrl() string {
 	var s string
 	for {
 		s = u.generateRandomString(5)
@@ -30,11 +30,11 @@ func (u *UrlUseCase) GenerateShortUrl() string {
 	return s
 }
 
-func (u *UrlUseCase) Save(url string, shortUrl string) {
+func (u *UseCase) Save(url string, shortUrl string) {
 	u.Storage.Set(url, shortUrl)
 }
 
-func (u *UrlUseCase) Get(shortUrl string) (string, error) {
+func (u *UseCase) Get(shortUrl string) (string, error) {
 	url, err := u.Cache.Get(shortUrl)
 	if err == nil {
 		return url, nil

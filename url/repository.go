@@ -1,4 +1,4 @@
-package url_shortener
+package url
 
 import (
 	"database/sql"
@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type UrlRepository interface {
+type Repository interface {
 	Get(key string) string
 	Set(url string, key string) string
 }
