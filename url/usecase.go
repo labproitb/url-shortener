@@ -3,8 +3,8 @@ package url
 import "math/rand"
 
 type UseCase struct {
-	Cache CachedUrlRepository
-	Storage PersistentUrlRepository
+	Cache   *CachedRepository
+	Storage *PersistentRepository
 }
 
 func (u *UseCase) generateRandomString(length int) string {

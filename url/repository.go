@@ -12,16 +12,16 @@ type Repository interface {
 	Set(url string, key string) string
 }
 
-type CachedUrlRepository struct {
-	client redis.Client
+type CachedRepository struct {
+	Client *redis.Client
 }
 
-type PersistentUrlRepository struct {
-	db sql.DB
+type PersistentRepository struct {
+	DB *sql.DB
 }
 
-func (c *CachedUrlRepository) Get(key string) (string, error) {
-	val, err := c.client.Get(key).Result()
+func (c *CachedRepository) Get(key string) (string, error) {
+	val, err := c.Client.Get(key).Result()
 	if err != nil {
 		log.Printf("Unable to find value for %s", key)
 		return "", err
@@ -30,21 +30,21 @@ func (c *CachedUrlRepository) Get(key string) (string, error) {
 	return val, nil
 }
 
-func (c *CachedUrlRepository) Set(url string, key string) {
+func (c *CachedRepository) Set(url string, key string) {
 	d, err := time.ParseDuration("168h")
 	if err != nil {
 		d = time.Hour * 168
 	}
 
-	_, err = c.client.Set(key, url, d).Result()
+	_, err = c.Client.Set(key, url, d).Result()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (p *PersistentUrlRepository) Get(key string) (string, error) {
+func (p *PersistentRepository) Get(key string) (string, error) {
 	query := "select long from url where key = :key"
-	r, err := p.db.Query(query, sql.Named("key", key))
+	r, err := p.DB.Query(query, sql.Named("key", key))
 	if err != nil {
 		panic(err)
 	}
@@ -59,9 +59,9 @@ func (p *PersistentUrlRepository) Get(key string) (string, error) {
 	return value, nil
 }
 
-func (p *PersistentUrlRepository) Set(key string, value string) {
+func (p *PersistentRepository) Set(key string, value string) {
 	query := "insert into url (key, value) values (:key, :value)"
-	_, err := p.db.Exec(query, sql.Named("key", key), sql.Named("value", value))
+	_, err := p.DB.Exec(query, sql.Named("key", key), sql.Named("value", value))
 	if err != nil {
 		panic(err)
 	}
