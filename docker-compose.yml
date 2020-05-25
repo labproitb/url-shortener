@@ -1,0 +1,31 @@
+version: "3"
+services:
+  cache:
+    image: redis
+    container_name: cache
+    expose:
+      - 6379
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    ports:
+      - 5433:5432
+    expose:
+      - 5432
+
+  app:
+    build: .
+    depends_on:
+      - db
+      - cache
+    environment:
+      REDIS_ADDR: "redis:6379"
+      DATABASE_URL: "postgres://postgres:${POSTGRES_PASSWORD}@localhost/postgres"
+    ports:
+      - 4000:4000
+    expose:
+      - 4000
+
